@@ -1,6 +1,6 @@
 
 import { useMemo, useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, CircleHelp, Clock3, FileUp, Heart, Info, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, Star, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleHelp, Clock3, FileUp, Heart, Info, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, Star, X } from 'lucide-react'
 
 type Recipe = { name: string; category: string; time: string; cost: number; color: string; ingredients: string[]; rating: number }
 
