@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react' // hola.
 import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, Star, X, AlertTriangle, Activity } from 'lucide-react'
 
 // 1 & 2. Actualización de tipos para incluir alérgenos y nutrición
