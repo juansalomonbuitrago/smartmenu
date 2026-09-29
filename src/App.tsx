@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react' // hola.
-import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, Star, X, AlertTriangle, Activity } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity } from 'lucide-react'
 
 // 1 & 2. Actualización de tipos para incluir alérgenos y nutrición
 type Nutrition = { kcal: number; protein: number; carbs: number; fat: number; sugar: number }
@@ -43,7 +43,7 @@ export default function App() {
     date.setUTCDate(calendarStart.getUTCDate() + (week - 1) * 7 + i)
     return date
   }), [week])
-  const monthly = weekRecipes.reduce((sum, recipe) => sum + recipe.cost * (1 + inflation / 100), 0)
+
 
   function showNotice(text: string) { setNotice(text); window.setTimeout(() => setNotice(''), 2600) }
 
