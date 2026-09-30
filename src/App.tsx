@@ -34,12 +34,15 @@ export default function App() {
   const [selected, setSelected] = useState<Recipe | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   
-  // Nuevos estados para la valoración
-  const [showRating, setShowRating] = useState(false)
-  const [ratingValue, setRatingValue] = useState(() => {
-  const guardado = localStorage.getItem('smartmenu_rating');
-  return guardado ? parseInt(guardado) : 0;
-});
+  // NUEVO: Estado en formato objeto para guardar valoraciones independientes de cada plato
+  const [dishRatings, setDishRatings] = useState<Record<string, number>>(() => {
+    try {
+      const guardado = localStorage.getItem('smartmenu_dish_ratings');
+      return guardado ? JSON.parse(guardado) : {};
+    } catch {
+      return {};
+    }
+  });
   
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
@@ -55,13 +58,19 @@ export default function App() {
 
   function showNotice(text: string) { setNotice(text); window.setTimeout(() => setNotice(''), 2600) }
 
+  // NUEVO: Función para actualizar la valoración de un plato en específico
+  const handleRateDish = (recipeName: string, rating: number) => {
+    const updatedRatings = { ...dishRatings, [recipeName]: rating };
+    setDishRatings(updatedRatings);
+    localStorage.setItem('smartmenu_dish_ratings', JSON.stringify(updatedRatings));
+    showNotice('¡Valoración del plato guardada!');
+  }
+
   return <main className="min-h-screen bg-[#f8faf8] text-[#17251f]">
-    {/* Header actualizado con el botón de valoración */}
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
       <div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-2xl bg-[#183c32] text-white shadow-sm"><Leaf /></div><div><p className="text-lg font-bold tracking-tight">SmartMenu</p><p className="text-xs text-[#75837c]">Tu semana, más sencilla</p></div></div>
       <nav className="hidden items-center gap-7 text-sm font-medium text-[#68766f] md:flex">
         <button className="text-[#183c32]">Mi menú</button>
-        <button onClick={() => setShowRating(true)} className="flex items-center gap-2 hover:text-[#183c32]"><Star size={16}/> Valorar App</button>
         <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 hover:text-[#183c32]"><Settings size={16}/> Ajustes</button>
         <button className="flex items-center gap-2 hover:text-[#183c32]"><CircleHelp size={16}/> Ayuda</button>
       </nav>
@@ -71,7 +80,6 @@ export default function App() {
     <section className="mx-auto max-w-7xl px-5 pb-10 pt-4 lg:px-10 lg:pt-12">
       <div className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#e6f3ed] px-3 py-1.5 text-xs font-semibold text-[#32725b]"><Sparkles size={14}/> Plan inteligente</div><h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-5xl">Menú de Comidas</h1><p className="mt-3 max-w-lg text-sm leading-6 text-[#74817b]">Cinco semanas de comidas variadas, equilibradas y pensadas para disfrutar en familia sin repetir platos.</p></div><button onClick={() => showNotice('¡Lista de compra preparada!')} className="flex items-center justify-center gap-2 rounded-2xl bg-[#27356f] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#27356f]/15 transition hover:bg-[#1d2857]"><ShoppingBasket size={18}/> Ver lista de compra</button></div>
       
-      {/* Botones de semana con colores fuertes y hover */}
       <div className="mb-8 flex items-center gap-2 overflow-x-auto pb-1">
         {[1,2,3,4,5].map(n => (
           <button key={n} onClick={() => {setWeek(n);setSelected(null)}} 
@@ -83,7 +91,6 @@ export default function App() {
 
       <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-bold">Semana {week}</h2><p className="mt-1 text-sm text-[#819089]">Del {dateFormatter.format(weekDates[0])} al {dateFormatter.format(weekDates[4])}</p></div><div className="flex gap-2"><button className="grid size-9 place-items-center rounded-xl bg-white text-[#738078] ring-1 ring-[#e2e9e4]" onClick={() => setWeek(Math.max(1, week-1))}><ChevronLeft size={18}/></button><button className="grid size-9 place-items-center rounded-xl bg-white text-[#738078] ring-1 ring-[#e2e9e4]" onClick={() => setWeek(Math.min(5, week+1))}><ChevronRight size={18}/></button></div></div>
       
-      {/* 4. Despliegue de comidas por semana */}
       <div className="grid gap-4 md:grid-cols-5">
         {weekdays.map((day, index) => { 
           const recipe = weekRecipes[index]; 
@@ -100,7 +107,6 @@ export default function App() {
                   </div>
                   <h3 className="mt-6 text-xl font-bold leading-tight drop-shadow-sm">{recipe.name}</h3>
                   
-                  {/* 1. Mostrar Alérgenos en la tarjeta */}
                   {recipe.allergens.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1">
                       {recipe.allergens.map(a => (
@@ -120,7 +126,7 @@ export default function App() {
       </div>
     </section>
 
-    {/* Modal de Detalle con Nutrición */}
+    {/* Modal de Detalle con Valoración Integrada */}
     {selected && (
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#17251f]/40 p-0 backdrop-blur-sm sm:items-center sm:p-6 transition-opacity" onClick={() => setSelected(null)}>
         <div role="dialog" aria-modal="true" aria-label={selected.name} onClick={e => e.stopPropagation()} className="w-full max-w-lg rounded-t-[2rem] bg-white p-6 shadow-2xl sm:rounded-[2rem] sm:p-8 overflow-y-auto max-h-[90vh]">
@@ -129,7 +135,21 @@ export default function App() {
             <button aria-label="Cerrar" onClick={() => setSelected(null)} className="grid size-9 place-items-center rounded-full bg-gray-100 hover:bg-gray-200 transition"><X size={18}/></button>
           </div>
           
-          {/* 2. Desglose Nutricional (Estilo imagen negra) */}
+          {/* NUEVO: Contenedor de estrellas por plato */}
+          <div className="mt-2 mb-4 flex flex-col items-center rounded-2xl bg-[#f5f8f5] p-4">
+            <span className="text-xs font-bold text-[#56806c] mb-2 uppercase tracking-wide">¿Qué te ha parecido este plato?</span>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const currentRating = dishRatings[selected.name] || 0;
+                return (
+                  <button key={star} onClick={() => handleRateDish(selected.name, star)} className="transition-transform hover:scale-110">
+                    <Star size={26} className={star <= currentRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="rounded-2xl bg-[#111111] p-5 text-white my-6 shadow-inner">
             <h3 className="text-[10px] font-bold tracking-widest text-gray-400 mb-2">TOTAL ACUMULADO</h3>
             <div className="text-3xl font-bold mb-4">≈{selected.nutrition.kcal} kcal</div>
@@ -147,41 +167,6 @@ export default function App() {
           </ul>
           
           <button onClick={() => showNotice('Plato añadido a favoritos')} className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#183c32] py-3.5 text-sm font-semibold text-white transition hover:bg-[#0f251f]"><Heart size={17}/> Guardar en favoritos</button>
-        </div>
-      </div>
-    )}
-
-    {/* Nuevo Modal de Valoración y Recarga */}
-    {showRating && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17251f]/40 p-5 backdrop-blur-sm transition-opacity" onClick={() => setShowRating(false)}>
-        <div onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-[2rem] bg-white p-7 shadow-2xl text-center">
-          <div className="flex justify-end mb-1">
-            <button aria-label="Cerrar valoración" onClick={() => setShowRating(false)} className="grid size-8 place-items-center rounded-full bg-[#f1f5f2] hover:bg-gray-200"><X size={16}/></button>
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Valora SmartMenu</h2>
-          <p className="text-sm text-[#74817b] mb-6">¿Qué te parece nuestra aplicación?</p>
-          
-          <div className="flex justify-center gap-3 mb-8">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button key={star} onClick={() => setRatingValue(star)} className="transition-transform hover:scale-110">
-                <Star size={36} className={star <= ratingValue ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              localStorage.setItem('smartmenu_rating', ratingValue.toString());
-              setShowRating(false);
-              showNotice('¡Gracias por tu valoración! Recargando...');
-              // Se ejecuta la recarga de la aplicación después de 1.5 segundos
-              setTimeout(() => window.location.reload(), 1500);
-            }}
-            disabled={ratingValue === 0}
-            className="w-full rounded-2xl bg-[#183c32] py-3.5 text-sm font-semibold text-white transition hover:bg-[#0f251f] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Enviar valoración
-          </button>
         </div>
       </div>
     )}
