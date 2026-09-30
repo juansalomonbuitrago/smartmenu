@@ -36,7 +36,10 @@ export default function App() {
   
   // Nuevos estados para la valoración
   const [showRating, setShowRating] = useState(false)
-  const [ratingValue, setRatingValue] = useState(0)
+  const [ratingValue, setRatingValue] = useState(() => {
+  const guardado = localStorage.getItem('smartmenu_rating');
+  return guardado ? parseInt(guardado) : 0;
+});
   
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
@@ -168,6 +171,7 @@ export default function App() {
 
           <button
             onClick={() => {
+              localStorage.setItem('smartmenu_rating', ratingValue.toString());
               setShowRating(false);
               showNotice('¡Gracias por tu valoración! Recargando...');
               // Se ejecuta la recarga de la aplicación después de 1.5 segundos
