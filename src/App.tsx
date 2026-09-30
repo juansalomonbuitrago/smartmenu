@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react' // hola.
-import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity } from 'lucide-react'
+import { useMemo, useState } from 'react' 
+import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity, Star } from 'lucide-react'
 
 // 1 & 2. Actualización de tipos para incluir alérgenos y nutrición
 type Nutrition = { kcal: number; protein: number; carbs: number; fat: number; sugar: number }
@@ -33,6 +33,11 @@ export default function App() {
   const [week, setWeek] = useState(1)
   const [selected, setSelected] = useState<Recipe | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  
+  // Nuevos estados para la valoración
+  const [showRating, setShowRating] = useState(false)
+  const [ratingValue, setRatingValue] = useState(0)
+  
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
   
@@ -48,10 +53,15 @@ export default function App() {
   function showNotice(text: string) { setNotice(text); window.setTimeout(() => setNotice(''), 2600) }
 
   return <main className="min-h-screen bg-[#f8faf8] text-[#17251f]">
-    {/* Header se mantiene igual */}
+    {/* Header actualizado con el botón de valoración */}
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
       <div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-2xl bg-[#183c32] text-white shadow-sm"><Leaf /></div><div><p className="text-lg font-bold tracking-tight">SmartMenu</p><p className="text-xs text-[#75837c]">Tu semana, más sencilla</p></div></div>
-      <nav className="hidden items-center gap-7 text-sm font-medium text-[#68766f] md:flex"><button className="text-[#183c32]">Mi menú</button><button onClick={() => setShowSettings(true)} className="flex items-center gap-2 hover:text-[#183c32]"><Settings size={16}/> Ajustes</button><button className="flex items-center gap-2 hover:text-[#183c32]"><CircleHelp size={16}/> Ayuda</button></nav>
+      <nav className="hidden items-center gap-7 text-sm font-medium text-[#68766f] md:flex">
+        <button className="text-[#183c32]">Mi menú</button>
+        <button onClick={() => setShowRating(true)} className="flex items-center gap-2 hover:text-[#183c32]"><Star size={16}/> Valorar App</button>
+        <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 hover:text-[#183c32]"><Settings size={16}/> Ajustes</button>
+        <button className="flex items-center gap-2 hover:text-[#183c32]"><CircleHelp size={16}/> Ayuda</button>
+      </nav>
       <button aria-label="Abrir menú" onClick={() => setShowSettings(true)} className="rounded-xl p-2 md:hidden"><Menu /></button>
     </header>
 
@@ -137,12 +147,44 @@ export default function App() {
         </div>
       </div>
     )}
+
+    {/* Nuevo Modal de Valoración y Recarga */}
+    {showRating && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17251f]/40 p-5 backdrop-blur-sm transition-opacity" onClick={() => setShowRating(false)}>
+        <div onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-[2rem] bg-white p-7 shadow-2xl text-center">
+          <div className="flex justify-end mb-1">
+            <button aria-label="Cerrar valoración" onClick={() => setShowRating(false)} className="grid size-8 place-items-center rounded-full bg-[#f1f5f2] hover:bg-gray-200"><X size={16}/></button>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Valora SmartMenu</h2>
+          <p className="text-sm text-[#74817b] mb-6">¿Qué te parece nuestra aplicación?</p>
+          
+          <div className="flex justify-center gap-3 mb-8">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} onClick={() => setRatingValue(star)} className="transition-transform hover:scale-110">
+                <Star size={36} className={star <= ratingValue ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              setShowRating(false);
+              showNotice('¡Gracias por tu valoración! Recargando...');
+              // Se ejecuta la recarga de la aplicación después de 1.5 segundos
+              setTimeout(() => window.location.reload(), 1500);
+            }}
+            disabled={ratingValue === 0}
+            className="w-full rounded-2xl bg-[#183c32] py-3.5 text-sm font-semibold text-white transition hover:bg-[#0f251f] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Enviar valoración
+          </button>
+        </div>
+      </div>
+    )}
     
-    {/* Ajustes y Notificaciones (Sin cambios significativos, heredados del original) */}
+    {/* Ajustes y Notificaciones */}
     {showSettings && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17251f]/30 p-5 backdrop-blur-sm" onClick={() => setShowSettings(false)}><div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-2xl"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#56806c]">Configuración</p><h2 className="mt-1 text-2xl font-bold">Ajustes de costes</h2></div><button aria-label="Cerrar ajustes" onClick={() => setShowSettings(false)} className="grid size-9 place-items-center rounded-full bg-[#f1f5f2]"><X size={18}/></button></div><div className="mt-7 rounded-2xl bg-[#f5f8f5] p-4"><div className="flex items-center justify-between"><label htmlFor="inflation" className="text-sm font-semibold">Inflación aplicada</label><span className="rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-[#1c7358]">{inflation}%</span></div><input id="inflation" type="range" min="0" max="15" value={inflation} onChange={e => setInflation(Number(e.target.value))} className="mt-5 w-full accent-[#1c7358]"/><div className="mt-2 flex justify-between text-[11px] text-[#87958d]"><span>Sin inflación</span><span>15% máximo</span></div></div><div className="mt-4 rounded-2xl border border-dashed border-[#cddbd2] p-5 text-center"><FileUp className="mx-auto text-[#4d9a78]"/><p className="mt-2 text-sm font-semibold">Actualizar banco de ingredientes</p><p className="mt-1 text-xs text-[#819089]">Importa un CSV o JSON con tus precios</p><label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#e6f3ed] px-4 py-2.5 text-xs font-bold text-[#32725b]"><Plus size={15}/> Elegir archivo<input type="file" accept=".csv,.json" className="sr-only" onChange={() => showNotice('Archivo listo para importar')}/></label></div></div></div>}
+    
     {notice && <div role="status" className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-[#183c32] px-5 py-3 text-sm font-semibold text-white shadow-xl">{notice}</div>}
   </main>
 }
-
-
-
