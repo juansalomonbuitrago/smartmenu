@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react' 
-import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity, Star, ShieldCheck } from 'lucide-react'
 
 // 1 & 2. Actualización de tipos para incluir alérgenos y nutrición
 type Nutrition = { kcal: number; protein: number; carbs: number; fat: number; sugar: number }
 type Recipe = { name: string; category: string; time: string; cost: number; color: string; ingredients: string[]; rating: number; allergens: string[]; nutrition: Nutrition }
 
-// Base de datos de recetas actualizada con alérgenos y nutrición
+// Base de datos de recetas
 const recipes: Recipe[] = [
   { name: 'Bowl mediterráneo', category: 'Fresco y ligero', time: '25 min', cost: 8.4, color: 'mint', rating: 5, ingredients: ['Quinoa · 120 g', 'Tomate cherry · 180 g', 'Pepino · 1 unidad', 'Hummus · 80 g'], allergens: ['Sésamo'], nutrition: { kcal: 420, protein: 12, carbs: 55, fat: 18, sugar: 4 } },
   { name: 'Tacos de pollo', category: 'Favorito familiar', time: '30 min', cost: 9.8, color: 'peach', rating: 5, ingredients: ['Tortillas · 6 unidades', 'Pechuga de pollo · 300 g', 'Aguacate · 1 unidad', 'Lima · 2 unidades'], allergens: ['Gluten'], nutrition: { kcal: 550, protein: 35, carbs: 45, fat: 22, sugar: 3 } },
@@ -19,7 +19,6 @@ const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
 const calendarStart = new Date(Date.UTC(2026, 8, 28))
 const dateFormatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' })
 
-// 3. Mapeo de colores más vivos con degradados
 const colorStyles: Record<string, string> = {
   mint: 'bg-gradient-to-br from-emerald-100 to-emerald-300 text-emerald-900 ring-emerald-400',
   peach: 'bg-gradient-to-br from-orange-100 to-orange-300 text-orange-900 ring-orange-400',
@@ -34,7 +33,7 @@ export default function App() {
   const [selected, setSelected] = useState<Recipe | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   
-  // NUEVO: Estado en formato objeto para guardar valoraciones independientes de cada plato
+  // Estado para las valoraciones
   const [dishRatings, setDishRatings] = useState<Record<string, number>>(() => {
     try {
       const guardado = localStorage.getItem('smartmenu_dish_ratings');
@@ -43,11 +42,15 @@ export default function App() {
       return {};
     }
   });
+
+  // NUEVO: Estado para verificar si el usuario ya aceptó los términos al entrar por primera vez
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
+    return localStorage.getItem('smartmenu_terms_accepted') === 'true';
+  });
   
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
   
-  // 5. Memorización para optimizar rendimiento
   const weekRecipes = useMemo(() => Array.from({ length: 5 }, (_, i) => recipes[(week - 1) * 5 + i] ?? recipes[(i + week * 2) % recipes.length]), [week])
   const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => {
     const date = new Date(calendarStart)
@@ -55,10 +58,8 @@ export default function App() {
     return date
   }), [week])
 
-
   function showNotice(text: string) { setNotice(text); window.setTimeout(() => setNotice(''), 2600) }
 
-  // NUEVO: Función para actualizar la valoración de un plato en específico
   const handleRateDish = (recipeName: string, rating: number) => {
     const updatedRatings = { ...dishRatings, [recipeName]: rating };
     setDishRatings(updatedRatings);
@@ -126,7 +127,7 @@ export default function App() {
       </div>
     </section>
 
-    {/* Modal de Detalle con Valoración Integrada */}
+    {/* Modal de Detalle */}
     {selected && (
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#17251f]/40 p-0 backdrop-blur-sm sm:items-center sm:p-6 transition-opacity" onClick={() => setSelected(null)}>
         <div role="dialog" aria-modal="true" aria-label={selected.name} onClick={e => e.stopPropagation()} className="w-full max-w-lg rounded-t-[2rem] bg-white p-6 shadow-2xl sm:rounded-[2rem] sm:p-8 overflow-y-auto max-h-[90vh]">
@@ -135,7 +136,6 @@ export default function App() {
             <button aria-label="Cerrar" onClick={() => setSelected(null)} className="grid size-9 place-items-center rounded-full bg-gray-100 hover:bg-gray-200 transition"><X size={18}/></button>
           </div>
           
-          {/* NUEVO: Contenedor de estrellas por plato */}
           <div className="mt-2 mb-4 flex flex-col items-center rounded-2xl bg-[#f5f8f5] p-4">
             <span className="text-xs font-bold text-[#56806c] mb-2 uppercase tracking-wide">¿Qué te ha parecido este plato?</span>
             <div className="flex gap-2">
@@ -171,9 +171,34 @@ export default function App() {
       </div>
     )}
     
-    {/* Ajustes y Notificaciones */}
+    {/* Ajustes */}
     {showSettings && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17251f]/30 p-5 backdrop-blur-sm" onClick={() => setShowSettings(false)}><div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-2xl"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#56806c]">Configuración</p><h2 className="mt-1 text-2xl font-bold">Ajustes de costes</h2></div><button aria-label="Cerrar ajustes" onClick={() => setShowSettings(false)} className="grid size-9 place-items-center rounded-full bg-[#f1f5f2]"><X size={18}/></button></div><div className="mt-7 rounded-2xl bg-[#f5f8f5] p-4"><div className="flex items-center justify-between"><label htmlFor="inflation" className="text-sm font-semibold">Inflación aplicada</label><span className="rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-[#1c7358]">{inflation}%</span></div><input id="inflation" type="range" min="0" max="15" value={inflation} onChange={e => setInflation(Number(e.target.value))} className="mt-5 w-full accent-[#1c7358]"/><div className="mt-2 flex justify-between text-[11px] text-[#87958d]"><span>Sin inflación</span><span>15% máximo</span></div></div><div className="mt-4 rounded-2xl border border-dashed border-[#cddbd2] p-5 text-center"><FileUp className="mx-auto text-[#4d9a78]"/><p className="mt-2 text-sm font-semibold">Actualizar banco de ingredientes</p><p className="mt-1 text-xs text-[#819089]">Importa un CSV o JSON con tus precios</p><label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#e6f3ed] px-4 py-2.5 text-xs font-bold text-[#32725b]"><Plus size={15}/> Elegir archivo<input type="file" accept=".csv,.json" className="sr-only" onChange={() => showNotice('Archivo listo para importar')}/></label></div></div></div>}
     
     {notice && <div role="status" className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-[#183c32] px-5 py-3 text-sm font-semibold text-white shadow-xl">{notice}</div>}
+
+    {/* NUEVO: Modal de aceptación de términos para nuevos usuarios */}
+    {!hasAcceptedTerms && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#17251f]/80 p-5 backdrop-blur-md">
+        <div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#e6f3ed] text-[#183c32]">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-2xl font-bold mb-3">¡Bienvenido a SmartMenu!</h2>
+          <p className="text-sm text-[#74817b] mb-8 leading-relaxed">
+            Para ofrecerte la mejor experiencia, guardamos tus preferencias de menú y valoraciones localmente en tu dispositivo. Al continuar, aceptas el uso de esta información para mejorar tu experiencia en la aplicación.
+          </p>
+          <button
+            onClick={() => {
+              localStorage.setItem('smartmenu_terms_accepted', 'true');
+              setHasAcceptedTerms(true);
+              showNotice('¡Gracias por unirte a SmartMenu!');
+            }}
+            className="w-full rounded-2xl bg-[#183c32] py-4 text-sm font-bold text-white transition hover:bg-[#0f251f]"
+          >
+            Aceptar y continuar
+          </button>
+        </div>
+      </div>
+    )}
   </main>
 }
