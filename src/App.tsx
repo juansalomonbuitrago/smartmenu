@@ -1,20 +1,43 @@
 import { useMemo, useState } from 'react' 
 import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus, Settings, ShoppingBasket, Sparkles, X, AlertTriangle, Activity, Star, ShieldCheck } from 'lucide-react'
 
-// 1 & 2. Actualización de tipos para incluir alérgenos y nutrición
 type Nutrition = { kcal: number; protein: number; carbs: number; fat: number; sugar: number }
 type Recipe = { name: string; category: string; time: string; cost: number; color: string; ingredients: string[]; rating: number; allergens: string[]; nutrition: Nutrition }
 
-// Base de datos de recetas
+// Base de datos ampliada a 25 recetas únicas para evitar repeticiones en las 5 semanas
 const recipes: Recipe[] = [
+  // Semana 1
   { name: 'Bowl mediterráneo', category: 'Fresco y ligero', time: '25 min', cost: 8.4, color: 'mint', rating: 5, ingredients: ['Quinoa · 120 g', 'Tomate cherry · 180 g', 'Pepino · 1 unidad', 'Hummus · 80 g'], allergens: ['Sésamo'], nutrition: { kcal: 420, protein: 12, carbs: 55, fat: 18, sugar: 4 } },
   { name: 'Tacos de pollo', category: 'Favorito familiar', time: '30 min', cost: 9.8, color: 'peach', rating: 5, ingredients: ['Tortillas · 6 unidades', 'Pechuga de pollo · 300 g', 'Aguacate · 1 unidad', 'Lima · 2 unidades'], allergens: ['Gluten'], nutrition: { kcal: 550, protein: 35, carbs: 45, fat: 22, sugar: 3 } },
   { name: 'Pasta primavera', category: 'Vegetariano', time: '20 min', cost: 6.7, color: 'lavender', rating: 4, ingredients: ['Pasta integral · 250 g', 'Calabacín · 1 unidad', 'Pimiento rojo · 1 unidad', 'Parmesano · 40 g'], allergens: ['Gluten', 'Lácteos'], nutrition: { kcal: 480, protein: 18, carbs: 68, fat: 14, sugar: 6 } },
   { name: 'Lentejas caseras', category: 'De cuchara', time: '45 min', cost: 5.2, color: 'sage', rating: 5, ingredients: ['Lentejas · 250 g', 'Zanahoria · 2 unidades', 'Patata · 2 unidades', 'Pimentón · 1 cucharadita'], allergens: [], nutrition: { kcal: 390, protein: 22, carbs: 60, fat: 5, sugar: 4 } },
   { name: 'Salmón al horno', category: 'Rico en omega 3', time: '35 min', cost: 12.6, color: 'blue', rating: 4, ingredients: ['Salmón · 2 lomos', 'Brócoli · 300 g', 'Limón · 1 unidad', 'Ajo · 2 dientes'], allergens: ['Pescado'], nutrition: { kcal: 460, protein: 42, carbs: 10, fat: 28, sugar: 2 } },
+  // Semana 2
   { name: 'Crema de calabaza', category: 'Suave y reconfortante', time: '35 min', cost: 4.9, color: 'yellow', rating: 5, ingredients: ['Calabaza · 600 g', 'Cebolla · 1 unidad', 'Nata · 100 ml', 'Nuez moscada · al gusto'], allergens: ['Lácteos'], nutrition: { kcal: 320, protein: 5, carbs: 30, fat: 20, sugar: 12 } },
   { name: 'Arroz tres delicias', category: 'Fácil y completo', time: '25 min', cost: 7.3, color: 'peach', rating: 4, ingredients: ['Arroz · 250 g', 'Guisantes · 100 g', 'Huevos · 2 unidades', 'Jamón cocido · 100 g'], allergens: ['Huevo', 'Soja'], nutrition: { kcal: 510, protein: 20, carbs: 70, fat: 15, sugar: 3 } },
+  { name: 'Ensalada César', category: 'Fresco y ligero', time: '15 min', cost: 6.5, color: 'mint', rating: 0, ingredients: ['Lechuga · 1 ud', 'Pollo · 150 g', 'Crutones · 30 g', 'Salsa César · 40 g'], allergens: ['Lácteos', 'Gluten'], nutrition: { kcal: 380, protein: 25, carbs: 15, fat: 22, sugar: 3 } },
+  { name: 'Pizza casera', category: 'Favorito familiar', time: '45 min', cost: 8.2, color: 'peach', rating: 0, ingredients: ['Masa · 1 ud', 'Tomate · 100 g', 'Mozzarella · 150 g', 'Jamón · 80 g'], allergens: ['Gluten', 'Lácteos'], nutrition: { kcal: 650, protein: 30, carbs: 70, fat: 25, sugar: 5 } },
+  { name: 'Wok de verduras', category: 'Vegetariano', time: '20 min', cost: 5.5, color: 'lavender', rating: 0, ingredients: ['Fideos · 200 g', 'Pimientos · 2 uds', 'Zanahoria · 1 ud', 'Salsa de soja · 30 ml'], allergens: ['Soja', 'Gluten'], nutrition: { kcal: 410, protein: 12, carbs: 65, fat: 8, sugar: 9 } },
+  // Semana 3
+  { name: 'Garbanzos con espinacas', category: 'De cuchara', time: '30 min', cost: 4.8, color: 'sage', rating: 0, ingredients: ['Garbanzos · 300 g', 'Espinacas · 200 g', 'Ajo · 2 dientes', 'Comino · 5 g'], allergens: [], nutrition: { kcal: 350, protein: 18, carbs: 45, fat: 10, sugar: 2 } },
+  { name: 'Merluza a la plancha', category: 'Rico en omega 3', time: '15 min', cost: 9.5, color: 'blue', rating: 0, ingredients: ['Merluza · 2 filetes', 'Espárragos · 150 g', 'Limón · 1 ud', 'Aceite · 15 ml'], allergens: ['Pescado'], nutrition: { kcal: 320, protein: 35, carbs: 5, fat: 15, sugar: 1 } },
+  { name: 'Sopa de fideos', category: 'Suave y reconfortante', time: '25 min', cost: 3.5, color: 'yellow', rating: 0, ingredients: ['Caldo de pollo · 500 ml', 'Fideos · 100 g', 'Huevo duro · 1 ud', 'Zanahoria · 1 ud'], allergens: ['Gluten', 'Huevo'], nutrition: { kcal: 280, protein: 15, carbs: 40, fat: 6, sugar: 3 } },
+  { name: 'Pollo al curry', category: 'Fácil y completo', time: '30 min', cost: 7.5, color: 'peach', rating: 0, ingredients: ['Pollo · 300 g', 'Arroz · 150 g', 'Leche de coco · 200 ml', 'Curry · 10 g'], allergens: [], nutrition: { kcal: 580, protein: 35, carbs: 55, fat: 28, sugar: 4 } },
+  { name: 'Poke bowl', category: 'Fresco y ligero', time: '20 min', cost: 11.0, color: 'mint', rating: 0, ingredients: ['Arroz sushi · 150 g', 'Salmón · 100 g', 'Edamame · 50 g', 'Aguacate · 1 ud'], allergens: ['Pescado', 'Soja'], nutrition: { kcal: 520, protein: 28, carbs: 60, fat: 20, sugar: 5 } },
+  // Semana 4
+  { name: 'Hamburguesa vegetal', category: 'Vegetariano', time: '25 min', cost: 7.2, color: 'lavender', rating: 0, ingredients: ['Pan · 2 uds', 'Hamburguesa Beyond · 2 uds', 'Lechuga · 50 g', 'Tomate · 1 ud'], allergens: ['Gluten', 'Soja'], nutrition: { kcal: 490, protein: 25, carbs: 45, fat: 22, sugar: 6 } },
+  { name: 'Alubias pintas', category: 'De cuchara', time: '45 min', cost: 4.5, color: 'sage', rating: 0, ingredients: ['Alubias · 300 g', 'Chorizo · 100 g', 'Cebolla · 1 ud', 'Pimentón · 5 g'], allergens: [], nutrition: { kcal: 550, protein: 25, carbs: 50, fat: 30, sugar: 2 } },
+  { name: 'Bacalao con tomate', category: 'Rico en omega 3', time: '35 min', cost: 10.5, color: 'blue', rating: 0, ingredients: ['Bacalao · 300 g', 'Salsa de tomate · 200 ml', 'Pimiento verde · 1 ud', 'Cebolla · 1 ud'], allergens: ['Pescado'], nutrition: { kcal: 410, protein: 38, carbs: 15, fat: 18, sugar: 8 } },
+  { name: 'Puré con salchichas', category: 'Suave y reconfortante', time: '30 min', cost: 5.5, color: 'yellow', rating: 0, ingredients: ['Patatas · 400 g', 'Salchichas · 4 uds', 'Leche · 50 ml', 'Mantequilla · 20 g'], allergens: ['Lácteos'], nutrition: { kcal: 620, protein: 20, carbs: 50, fat: 35, sugar: 4 } },
+  { name: 'Espaguetis boloñesa', category: 'Favorito familiar', time: '35 min', cost: 6.8, color: 'peach', rating: 0, ingredients: ['Espaguetis · 250 g', 'Carne picada · 200 g', 'Tomate frito · 150 g', 'Queso rallado · 30 g'], allergens: ['Gluten', 'Lácteos'], nutrition: { kcal: 590, protein: 32, carbs: 75, fat: 18, sugar: 6 } },
+  // Semana 5
+  { name: 'Ensalada de garbanzos', category: 'Fresco y ligero', time: '15 min', cost: 4.5, color: 'mint', rating: 0, ingredients: ['Garbanzos · 200 g', 'Atún · 1 lata', 'Tomate · 1 ud', 'Huevo duro · 1 ud'], allergens: ['Pescado', 'Huevo'], nutrition: { kcal: 430, protein: 28, carbs: 45, fat: 14, sugar: 3 } },
+  { name: 'Risotto de setas', category: 'Vegetariano', time: '40 min', cost: 8.5, color: 'lavender', rating: 0, ingredients: ['Arroz arborio · 200 g', 'Setas · 250 g', 'Caldo vegetal · 500 ml', 'Parmesano · 50 g'], allergens: ['Lácteos'], nutrition: { kcal: 480, protein: 15, carbs: 68, fat: 16, sugar: 2 } },
+  { name: 'Estofado de ternera', category: 'De cuchara', time: '60 min', cost: 11.5, color: 'sage', rating: 0, ingredients: ['Ternera · 300 g', 'Patatas · 2 uds', 'Zanahorias · 2 uds', 'Guisantes · 50 g'], allergens: [], nutrition: { kcal: 520, protein: 45, carbs: 40, fat: 18, sugar: 5 } },
+  { name: 'Dorada al horno', category: 'Rico en omega 3', time: '40 min', cost: 13.0, color: 'blue', rating: 0, ingredients: ['Dorada · 2 uds', 'Patatas panadera · 2 uds', 'Cebolla · 1 ud', 'Vino blanco · 50 ml'], allergens: ['Pescado'], nutrition: { kcal: 450, protein: 42, carbs: 35, fat: 14, sugar: 4 } },
+  { name: 'Crema de calabacín', category: 'Suave y reconfortante', time: '25 min', cost: 3.8, color: 'yellow', rating: 0, ingredients: ['Calabacín · 2 uds', 'Patata · 1 ud', 'Quesitos · 2 uds', 'Cebolla · 1 ud'], allergens: ['Lácteos'], nutrition: { kcal: 250, protein: 8, carbs: 25, fat: 12, sugar: 6 } }
 ]
+
 const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
 const calendarStart = new Date(Date.UTC(2026, 8, 28))
 const dateFormatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' })
@@ -33,7 +56,6 @@ export default function App() {
   const [selected, setSelected] = useState<Recipe | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   
-  // Estado para las valoraciones
   const [dishRatings, setDishRatings] = useState<Record<string, number>>(() => {
     try {
       const guardado = localStorage.getItem('smartmenu_dish_ratings');
@@ -43,7 +65,6 @@ export default function App() {
     }
   });
 
-  // NUEVO: Estado para verificar si el usuario ya aceptó los términos al entrar por primera vez
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
     return localStorage.getItem('smartmenu_terms_accepted') === 'true';
   });
@@ -51,7 +72,12 @@ export default function App() {
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
   
-  const weekRecipes = useMemo(() => Array.from({ length: 5 }, (_, i) => recipes[(week - 1) * 5 + i] ?? recipes[(i + week * 2) % recipes.length]), [week])
+  // NUEVO: Lógica actualizada para extraer exactamente 5 platos únicos por semana, sin repetirlos
+  const weekRecipes = useMemo(() => {
+    const startIndex = (week - 1) * 5;
+    return recipes.slice(startIndex, startIndex + 5);
+  }, [week])
+
   const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => {
     const date = new Date(calendarStart)
     date.setUTCDate(calendarStart.getUTCDate() + (week - 1) * 7 + i)
@@ -127,7 +153,6 @@ export default function App() {
       </div>
     </section>
 
-    {/* Modal de Detalle */}
     {selected && (
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#17251f]/40 p-0 backdrop-blur-sm sm:items-center sm:p-6 transition-opacity" onClick={() => setSelected(null)}>
         <div role="dialog" aria-modal="true" aria-label={selected.name} onClick={e => e.stopPropagation()} className="w-full max-w-lg rounded-t-[2rem] bg-white p-6 shadow-2xl sm:rounded-[2rem] sm:p-8 overflow-y-auto max-h-[90vh]">
@@ -171,12 +196,10 @@ export default function App() {
       </div>
     )}
     
-    {/* Ajustes */}
     {showSettings && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17251f]/30 p-5 backdrop-blur-sm" onClick={() => setShowSettings(false)}><div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-2xl"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#56806c]">Configuración</p><h2 className="mt-1 text-2xl font-bold">Ajustes de costes</h2></div><button aria-label="Cerrar ajustes" onClick={() => setShowSettings(false)} className="grid size-9 place-items-center rounded-full bg-[#f1f5f2]"><X size={18}/></button></div><div className="mt-7 rounded-2xl bg-[#f5f8f5] p-4"><div className="flex items-center justify-between"><label htmlFor="inflation" className="text-sm font-semibold">Inflación aplicada</label><span className="rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-[#1c7358]">{inflation}%</span></div><input id="inflation" type="range" min="0" max="15" value={inflation} onChange={e => setInflation(Number(e.target.value))} className="mt-5 w-full accent-[#1c7358]"/><div className="mt-2 flex justify-between text-[11px] text-[#87958d]"><span>Sin inflación</span><span>15% máximo</span></div></div><div className="mt-4 rounded-2xl border border-dashed border-[#cddbd2] p-5 text-center"><FileUp className="mx-auto text-[#4d9a78]"/><p className="mt-2 text-sm font-semibold">Actualizar banco de ingredientes</p><p className="mt-1 text-xs text-[#819089]">Importa un CSV o JSON con tus precios</p><label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#e6f3ed] px-4 py-2.5 text-xs font-bold text-[#32725b]"><Plus size={15}/> Elegir archivo<input type="file" accept=".csv,.json" className="sr-only" onChange={() => showNotice('Archivo listo para importar')}/></label></div></div></div>}
     
     {notice && <div role="status" className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-[#183c32] px-5 py-3 text-sm font-semibold text-white shadow-xl">{notice}</div>}
 
-    {/* NUEVO: Modal de aceptación de términos para nuevos usuarios */}
     {!hasAcceptedTerms && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#17251f]/80 p-5 backdrop-blur-md">
         <div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl">
