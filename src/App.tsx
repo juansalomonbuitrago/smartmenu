@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, CircleHelp, FileUp, Heart, Leaf, Menu, Plus,
 type Nutrition = { kcal: number; protein: number; carbs: number; fat: number; sugar: number }
 type Recipe = { name: string; category: string; time: string; cost: number; color: string; ingredients: string[]; rating: number; allergens: string[]; nutrition: Nutrition }
 
-// Base de datos ampliada a 25 recetas únicas para evitar repeticiones en las 5 semanas
 const recipes: Recipe[] = [
   // Semana 1
   { name: 'Bowl mediterráneo', category: 'Fresco y ligero', time: '25 min', cost: 8.4, color: 'mint', rating: 5, ingredients: ['Quinoa · 120 g', 'Tomate cherry · 180 g', 'Pepino · 1 unidad', 'Hummus · 80 g'], allergens: ['Sésamo'], nutrition: { kcal: 420, protein: 12, carbs: 55, fat: 18, sugar: 4 } },
@@ -72,7 +71,6 @@ export default function App() {
   const [inflation, setInflation] = useState(3)
   const [notice, setNotice] = useState('')
   
-  // NUEVO: Lógica actualizada para extraer exactamente 5 platos únicos por semana, sin repetirlos
   const weekRecipes = useMemo(() => {
     const startIndex = (week - 1) * 5;
     return recipes.slice(startIndex, startIndex + 5);
@@ -93,6 +91,28 @@ export default function App() {
     showNotice('¡Valoración del plato guardada!');
   }
 
+  // NUEVO: Función para generar y enviar la lista de compra por correo (Anti-Spam nativo)
+  const handleSendShoppingList = () => {
+    // 1. Extraer todos los ingredientes de la semana actual
+    const allIngredients = weekRecipes.flatMap(recipe => recipe.ingredients);
+    
+    // 2. Eliminar duplicados exactos usando Set
+    const uniqueIngredients = Array.from(new Set(allIngredients));
+    
+    // 3. Formatear el texto del correo
+    const emailSubject = encodeURIComponent(`Lista de Compra - SmartMenu (Semana ${week})`);
+    
+    const emailBodyText = `¡Hola!\n\nAquí tienes la lista de compra consolidada para la Semana ${week} de tu menú inteligente:\n\n` + 
+      uniqueIngredients.map(item => `• ${item}`).join('\n') + 
+      `\n\n¡Que disfrutes de una excelente semana de comidas!`;
+      
+    const emailBody = encodeURIComponent(emailBodyText);
+    
+    // 4. Abrir la aplicación de correo por defecto del usuario
+    window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+    showNotice('Abriendo tu aplicación de correo...');
+  }
+
   return <main className="min-h-screen bg-[#f8faf8] text-[#17251f]">
     <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
       <div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-2xl bg-[#183c32] text-white shadow-sm"><Leaf /></div><div><p className="text-lg font-bold tracking-tight">SmartMenu</p><p className="text-xs text-[#75837c]">Tu semana, más sencilla</p></div></div>
@@ -105,7 +125,18 @@ export default function App() {
     </header>
 
     <section className="mx-auto max-w-7xl px-5 pb-10 pt-4 lg:px-10 lg:pt-12">
-      <div className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#e6f3ed] px-3 py-1.5 text-xs font-semibold text-[#32725b]"><Sparkles size={14}/> Plan inteligente</div><h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-5xl">Menú de Comidas</h1><p className="mt-3 max-w-lg text-sm leading-6 text-[#74817b]">Cinco semanas de comidas variadas, equilibradas y pensadas para disfrutar en familia sin repetir platos.</p></div><button onClick={() => showNotice('¡Lista de compra preparada!')} className="flex items-center justify-center gap-2 rounded-2xl bg-[#27356f] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#27356f]/15 transition hover:bg-[#1d2857]"><ShoppingBasket size={18}/> Ver lista de compra</button></div>
+      <div className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+        <div>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#e6f3ed] px-3 py-1.5 text-xs font-semibold text-[#32725b]"><Sparkles size={14}/> Plan inteligente</div>
+          <h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-5xl">Menú de Comidas</h1>
+          <p className="mt-3 max-w-lg text-sm leading-6 text-[#74817b]">Cinco semanas de comidas variadas, equilibradas y pensadas para disfrutar en familia sin repetir platos.</p>
+        </div>
+        
+        {/* BOTÓN ACTUALIZADO: Llama a la función del correo */}
+        <button onClick={handleSendShoppingList} className="flex items-center justify-center gap-2 rounded-2xl bg-[#27356f] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#27356f]/15 transition hover:bg-[#1d2857]">
+          <ShoppingBasket size={18}/> Ver lista de compra
+        </button>
+      </div>
       
       <div className="mb-8 flex items-center gap-2 overflow-x-auto pb-1">
         {[1,2,3,4,5].map(n => (
